@@ -9,6 +9,9 @@ import time
 last_toggle_time=time.time()
 detection_on = True
 
+detection_on_time = 60
+detection_off_time = 15
+
 # Pygame 초기화 및 알람 소리 설정
 pygame.init()
 pygame.mixer.init()
@@ -42,8 +45,11 @@ def get_person_distance(image, depth_map):
     return None, None, None
 
 while True:
-    if time.time()-last_toggle_time>=30:
-        detection_on = not detection_on
+    if detection_on and time.time()-last_toggle_time>=detection_on_time:
+        detection_on = False
+        last_toggle_time=time.time()
+    elif not detection_on and time.time()-last_toggle_time>=detection_off_time:
+        detection_on=True
         last_toggle_time=time.time()
     if detection_on:
         # 스테레오 카메라 프레임 읽기
