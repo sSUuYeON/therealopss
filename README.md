@@ -7,6 +7,8 @@ yolo5 : 사람 인식
 
 pyzed : 거리 인식
 
+---
+
 # 실행 방법:
 
 1. onlyhu.py, stopCHU.wav, yolov5s.pt 파일을 다운로드
