@@ -9,7 +9,7 @@ import time
 last_toggle_time=time.time()
 detection_on = True
 
-detection_on_time = 60
+detection_on_time = 40
 detection_off_time = 15
 
 # Pygame 초기화 및 알람 소리 설정
@@ -64,8 +64,8 @@ while True:
             # 사람 인식 및 거리 측정
             person_distance, person_bbox, person_conf = get_person_distance(image_np, depth_map)
 
-            # 사람이 10미터 이내에 있을 경우 알람 재생
-            if person_distance is not None and person_distance < 3:
+            # 사람이 4미터 이내에 있을 경우 알람 재생
+            if person_distance is not None and person_distance < 4:
                 current_time = pygame.time.get_ticks()
                 if not alarm_playing or (current_time - last_alarm_time > alarm_duration):
                     alarm_sound.play()
@@ -73,7 +73,6 @@ while True:
                     alarm_playing = True
 
             # 시각화
- 
             cv2.imshow('Stereo Camera - Person Detection', image_np)
 
     if cv2.waitKey(10) & 0xFF == ord('q'):
