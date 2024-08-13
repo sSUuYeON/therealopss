@@ -19,6 +19,7 @@ alarm_sound = pygame.mixer.Sound('C:/car/stopCHU.wav')
 
 # YOLOv5 모델 로드
 model_person = torch.hub.load('ultralytics/yolov5', 'yolov5s')
+model_trafficlight = torch.hub.load('ultralytics/yolov5', 'yolov5')
 
 # 스테레오 카메라 초기화
 zed = sl.Camera()
@@ -44,6 +45,20 @@ def get_person_distance(image, depth_map):
             return distance, (int(xmin), int(ymin), int(xmax), int(ymax)), conf
     return None, None, None
 
+def detect_trafficlight(image):
+    trafficlight_results = model_trafficlight(image)
+
+    for det in trafficlight_results.xyxy[0]:
+        xmin, ymin, xmax, ymax, conf, cls = det
+        if int(cls) == 9:
+            print(f'Traffic light detected with confidence {conf:.2f}')
+            print(f'Coordinates: ({xmin:.2f}, {ymin:.2f}) to ({xmax:.2f}, {ymax:.2f})')
+
+            cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+    return image
+
+
+
 while True:
     if detection_on and time.time()-last_toggle_time>=detection_on_time:
         detection_on = False
@@ -64,7 +79,7 @@ while True:
             # 사람 인식 및 거리 측정
             person_distance, person_bbox, person_conf = get_person_distance(image_np, depth_map)
 
-            # 사람이 4미터 이내에 있을 경우 알람 재생
+            # 사람이 10미터 이내에 있을 경우 알람 재생
             if person_distance is not None and person_distance < 4:
                 current_time = pygame.time.get_ticks()
                 if not alarm_playing or (current_time - last_alarm_time > alarm_duration):
@@ -73,6 +88,10 @@ while True:
                     alarm_playing = True
 
             # 시각화
+            if person_bbox:
+                xmin, ymin, xmax, ymax = person_bbox
+                cv2.rectangle(image_np, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+                cv2.putText(image_np,f'person {person_conf:.2f} {person_distance:.2f}m', (xmin, ymin-10))
             cv2.imshow('Stereo Camera - Person Detection', image_np)
 
     if cv2.waitKey(10) & 0xFF == ord('q'):
